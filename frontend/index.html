@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analizador Web | Eclypse</title>
+  <meta name="description" content="Analizá tu sitio web gratis: CMS, seguridad, performance, SEO y más. Reporte PDF en minutos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <span class="logo-text">ECLYPSE</span>
+        <span class="logo-tag">Web Intelligence</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="badge">Análisis gratuito · Reporte en PDF</div>
+        <h1 class="hero-title">
+          ¿Tu sitio web está<br>
+          <span class="highlight">perdiendo clientes</span>?
+        </h1>
+        <p class="hero-subtitle">
+          Ingresá la URL y en menos de 60 segundos recibís un análisis completo:<br>
+          seguridad, velocidad, SEO, WordPress, hosting y más.
+        </p>
+
+        <form id="analyzeForm" class="form-card" novalidate>
+          <div class="form-group">
+            <label for="url">URL de tu sitio web</label>
+            <div class="input-prefix-wrap">
+              <span class="input-prefix">https://</span>
+              <input type="text" id="url" name="url" placeholder="tuempresa.com" required autocomplete="off" spellcheck="false" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Tu nombre <span class="optional">(opcional)</span></label>
+              <input type="text" id="name" name="name" placeholder="María García" />
+            </div>
+            <div class="form-group">
+              <label for="email">Tu email <span class="optional">(opcional)</span></label>
+              <input type="email" id="email" name="email" placeholder="maria@empresa.com" />
+            </div>
+          </div>
+          <p class="form-disclaimer">Análisis 100% seguro y ético. Solo consultamos información pública del sitio.</p>
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="btn-text">Analizar mi sitio</span>
+            <span class="btn-icon">→</span>
+          </button>
+          <div id="formError" class="form-error hidden"></div>
+        </form>
+
+        <div class="trust-badges">
+          <div class="badge-item">
+            <span class="badge-icon">⚡</span>
+            <span>Resultado en ~60s</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-icon">🔒</span>
+            <span>100% ético y legal</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-icon">📄</span>
+            <span>Reporte PDF descargable</span>
+          </div>
+          <div class="badge-item">
+            <span class="badge-icon">🆓</span>
+            <span>Gratis, sin registro</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-preview">
+        <div class="preview-card">
+          <div class="preview-header">
+            <div class="preview-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="preview-title">restaurantlaspalmas.com</span>
+          </div>
+          <div class="preview-body">
+            <div class="preview-score">
+              <span class="score-number" style="color:#FF3B3B">78</span>
+              <span class="score-label">LEAD CALIENTE</span>
+            </div>
+            <div class="preview-items">
+              <div class="preview-item critical">
+                <span class="pi-dot"></span>
+                <span>WordPress 5.8.1 desactualizado</span>
+              </div>
+              <div class="preview-item critical">
+                <span class="pi-dot"></span>
+                <span>SSL vence en 23 días</span>
+              </div>
+              <div class="preview-item warning">
+                <span class="pi-dot warning"></span>
+                <span>Mobile score: 34/100</span>
+              </div>
+              <div class="preview-item warning">
+                <span class="pi-dot warning"></span>
+                <span>Sin meta description</span>
+              </div>
+              <div class="preview-item info">
+                <span class="pi-dot info"></span>
+                <span>6 plugins sin actualizar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="modules-section">
+    <div class="container">
+      <h2 class="section-title">¿Qué analizamos?</h2>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="module-icon">🔍</div>
+          <h3>CMS & Tecnología</h3>
+          <p>WordPress, Shopify, Wix, versión, plugins, tema activo</p>
+        </div>
+        <div class="module-card">
+          <div class="module-icon">🔒</div>
+          <h3>Seguridad</h3>
+          <p>SSL, headers de seguridad, vulnerabilidades CVE, archivos expuestos</p>
+        </div>
+        <div class="module-card">
+          <div class="module-icon">⚡</div>
+          <h3>Performance</h3>
+          <p>Core Web Vitals, LCP, FCP, CLS, score mobile y desktop</p>
+        </div>
+        <div class="module-card">
+          <div class="module-icon">🌐</div>
+          <h3>Hosting</h3>
+          <p>Proveedor, ubicación del servidor, WHOIS, proveedor de email</p>
+        </div>
+        <div class="module-card">
+          <div class="module-icon">📈</div>
+          <h3>SEO</h3>
+          <p>Meta tags, sitemap, robots.txt, schema markup, OG tags</p>
+        </div>
+        <div class="module-card">
+          <div class="module-icon">✅</div>
+          <h3>Compliance</h3>
+          <p>Analytics instalado, cookie banner, política de privacidad</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 Eclypse · <a href="https://eclypsedesign.com" target="_blank">eclypsedesign.com</a></p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/analyzer.js"></script>
+</body>
+</html>

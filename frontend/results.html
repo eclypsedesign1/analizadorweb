@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analizando... | Eclypse Web Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="logo">
+        <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
+          <span class="logo-text">ECLYPSE</span>
+          <span class="logo-tag">Web Intelligence</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOADING STATE -->
+  <section id="loadingSection" class="loading-section">
+    <div class="container loading-container">
+      <div id="domainLabel" class="analyzing-domain">Analizando sitio...</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-outer">
+          <div id="progressBar" class="progress-bar-inner" style="width:0%"></div>
+        </div>
+        <span id="progressPct" class="progress-pct">0%</span>
+      </div>
+      <div id="progressMsg" class="progress-msg">Iniciando análisis...</div>
+      <div class="module-steps">
+        <div class="step" id="step-cms">🔍 CMS</div>
+        <div class="step" id="step-security">🔒 Seguridad</div>
+        <div class="step" id="step-performance">⚡ Performance</div>
+        <div class="step" id="step-hosting">🌐 Hosting</div>
+        <div class="step" id="step-contacts">📇 Contacto</div>
+        <div class="step" id="step-seo">📈 SEO</div>
+        <div class="step" id="step-compliance">✅ Compliance</div>
+        <div class="step" id="step-pdf">📄 PDF</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS STATE (hidden until done) -->
+  <section id="resultsSection" class="results-section hidden">
+    <div class="container">
+
+      <!-- Score header -->
+      <div class="results-header">
+        <div>
+          <div id="resultDomain" class="result-domain"></div>
+          <div id="resultDate" class="result-date"></div>
+        </div>
+        <div id="scoreWrap" class="score-wrap">
+          <div id="scoreNumber" class="score-number-big"></div>
+          <div id="scoreLabel" class="score-label-big"></div>
+          <div class="score-sub">de 100 puntos</div>
+        </div>
+      </div>
+
+      <!-- Breakdown bar -->
+      <div id="breakdownSection" class="breakdown-section"></div>
+
+      <!-- Top issues -->
+      <div id="topIssuesSection">
+        <h2 class="section-heading">Problemas detectados</h2>
+        <div id="topIssuesList" class="issues-list"></div>
+      </div>
+
+      <!-- Module tabs -->
+      <div class="tabs-wrap">
+        <div class="tabs">
+          <button class="tab active" data-tab="cms">CMS</button>
+          <button class="tab" data-tab="security">Seguridad</button>
+          <button class="tab" data-tab="performance">Performance</button>
+          <button class="tab" data-tab="hosting">Hosting</button>
+          <button class="tab" data-tab="contacts">Contacto</button>
+          <button class="tab" data-tab="seo">SEO</button>
+          <button class="tab" data-tab="compliance">Compliance</button>
+        </div>
+
+        <div class="tab-content" id="tab-cms"></div>
+        <div class="tab-content hidden" id="tab-security"></div>
+        <div class="tab-content hidden" id="tab-performance"></div>
+        <div class="tab-content hidden" id="tab-hosting"></div>
+        <div class="tab-content hidden" id="tab-contacts"></div>
+        <div class="tab-content hidden" id="tab-seo"></div>
+        <div class="tab-content hidden" id="tab-compliance"></div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-bar">
+        <button id="downloadBtn" class="btn-primary">📄 Descargar PDF</button>
+        <a href="/" class="btn-secondary">Analizar otro sitio</a>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-card">
+        <div class="cta-content">
+          <h3>¿Querés que lo resolvamos?</h3>
+          <p>Eclypse resuelve todos los problemas de este reporte.<br>Mantenimiento · Seguridad · Performance · SEO</p>
+        </div>
+        <a href="https://eclypsedesign.com" target="_blank" class="btn-cta">Hablemos →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ERROR STATE -->
+  <section id="errorSection" class="error-section hidden">
+    <div class="container">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h2>No se pudo completar el análisis</h2>
+        <p id="errorMsg">El sitio puede estar caído o no ser accesible.</p>
+        <a href="/" class="btn-primary">Intentar con otro sitio</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 Eclypse · <a href="https://eclypsedesign.com" target="_blank">eclypsedesign.com</a></p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/analyzer.js"></script>
+</body>
+</html>
