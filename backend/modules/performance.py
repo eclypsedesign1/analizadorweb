@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import time
-import base64
+
 import requests
-from backend.config import PAGESPEED_API_KEY, HEADERS, REQUEST_TIMEOUT
+
+from backend.config import PAGESPEED_API_KEY, REQUEST_TIMEOUT
+from backend.safe_fetch import safe_get, safe_head
 from backend.models import PerformanceResult, Issue, Severity
 
 CDN_SIGNATURES = {
-    "Cloudflare": ["cloudflare", "cf-ray", "cf-cache-status"],
-    "Fastly": ["fastly", "x-served-by", "x-cache"],
-    "Akamai": ["akamai", "x-check-cacheable", "x-akamai"],
-    "AWS CloudFront": ["cloudfront", "x-amz-cf-id"],
-    "BunnyCDN": ["bunnycdn", "x-pull-zone"],
+    "Cloudflare": ["cf-ray", "cf-cache-status"],
+    "Fastly": ["x-served-by", "x-fastly"],
+    "Akamai": ["x-check-cacheable", "x-akamai-transformed"],
+    "AWS CloudFront": ["x-amz-cf-id"],
+    "BunnyCDN": ["x-pull-zone"],
 }
 
 
@@ -17,8 +21,11 @@ def _pagespeed(url: str, strategy: str) -> dict:
     if not PAGESPEED_API_KEY:
         return {}
     try:
-        params = {"url": url, "strategy": strategy, "key": PAGESPEED_API_KEY}
-        r = requests.get("https://www.googleapis.com/pagespeedonline/v5/runPagespeed", params=params, timeout=45)
+        r = requests.get(
+            "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+            params={"url": url, "strategy": strategy, "key": PAGESPEED_API_KEY},
+            timeout=45,
+        )
         if not r.ok:
             return {}
         data = r.json()
@@ -31,9 +38,10 @@ def _pagespeed(url: str, strategy: str) -> dict:
             return round(v / 1000, 2) if v else None
 
         screenshot = None
-        ss_data = audits.get("final-screenshot", {}).get("details", {}).get("data", "")
-        if ss_data and strategy == "mobile":
-            screenshot = ss_data
+        if strategy == "mobile":
+            ss_data = audits.get("final-screenshot", {}).get("details", {}).get("data", "")
+            if ss_data:
+                screenshot = ss_data
 
         return {
             "score": score,
@@ -50,7 +58,7 @@ def _pagespeed(url: str, strategy: str) -> dict:
 def _measure_ttfb(url: str) -> float | None:
     try:
         start = time.time()
-        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT, stream=True)
+        r = safe_get(url, stream=True)
         ttfb = time.time() - start
         r.close()
         return round(ttfb, 3)
@@ -60,11 +68,10 @@ def _measure_ttfb(url: str) -> float | None:
 
 def _detect_cdn(url: str) -> tuple[bool, str | None]:
     try:
-        r = requests.head(url, headers=HEADERS, timeout=REQUEST_TIMEOUT, allow_redirects=True)
-        resp_headers_lower = {k.lower(): v.lower() for k, v in r.headers.items()}
-        header_values = " ".join(resp_headers_lower.values())
+        r = safe_head(url, allow_redirects=True)
+        resp_lower = {k.lower(): v.lower() for k, v in r.headers.items()}
         for provider, sigs in CDN_SIGNATURES.items():
-            if any(sig in header_values or sig in resp_headers_lower for sig in sigs):
+            if any(sig in resp_lower for sig in sigs):
                 return True, provider
     except Exception:
         pass
@@ -96,7 +103,7 @@ def analyze(url: str) -> PerformanceResult:
         issues.append(Issue(severity=Severity.warning, message=f"LCP a mejorar: {lcp}s"))
 
     if cls and cls > 0.25:
-        issues.append(Issue(severity=Severity.warning, message=f"CLS alto: {cls}", detail="El contenido se mueve durante la carga, mala experiencia de usuario"))
+        issues.append(Issue(severity=Severity.warning, message=f"CLS alto: {cls}", detail="El contenido se mueve durante la carga"))
 
     if not uses_cdn:
         issues.append(Issue(severity=Severity.info, message="No usa CDN", detail="Un CDN mejora la velocidad de carga globalmente"))
@@ -111,5 +118,5 @@ def analyze(url: str) -> PerformanceResult:
         uses_cdn=uses_cdn,
         cdn_provider=cdn_provider,
         screenshot_mobile=mobile.get("screenshot"),
-        issues=issues
+        issues=issues,
     )

@@ -90,10 +90,11 @@
     if (msg) $('errorMsg').textContent = msg;
   }
 
+  // Score alto = más problemas = lead caliente (color naranja/rojo indica oportunidad comercial)
   function scoreColor(score) {
-    if (score >= 70) return '#FF3B3B';
-    if (score >= 40) return '#FFAA00';
-    return '#22C55E';
+    if (score >= 70) return '#FF3B3B';   // LEAD CALIENTE
+    if (score >= 40) return '#FFAA00';   // OPORTUNIDAD MEDIA
+    return '#22C55E';                    // SITIO SALUDABLE
   }
 
   function severityClass(s) { return s === 'critical' ? 'critical' : s === 'warning' ? 'warning' : 'info'; }
@@ -121,7 +122,8 @@
     table.className = 'info-table';
     rows.forEach(([label, val, cls]) => {
       const tr = document.createElement('tr');
-      const valCls = cls ? ` class="${cls}"` : '';
+      // esc() the class name too — defensive against future dynamic class values
+      const valCls = cls ? ` class="${esc(cls)}"` : '';
       tr.innerHTML = `<td class="label-col">${esc(label)}</td><td${valCls}>${esc(String(val ?? '—'))}</td>`;
       table.appendChild(tr);
     });

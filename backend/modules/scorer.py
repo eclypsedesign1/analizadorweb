@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from backend.models import (
     CMSResult, SecurityResult, PerformanceResult,
     HostingResult, SEOResult, ComplianceResult,
-    ScoreResult, Issue, Severity
+    ScoreResult, Issue, Severity,
 )
 
 
@@ -13,25 +15,27 @@ def calculate(
     seo: SEOResult | None,
     compliance: ComplianceResult | None,
 ) -> ScoreResult:
+    """
+    Score 0-100: higher = more problems found = stronger sales opportunity.
+    The label and color in the UI reflect lead quality, not site health.
+    """
     score = 0
-    breakdown = {}
+    breakdown: dict[str, int] = {}
     all_issues: list[Issue] = []
 
-    # --- CMS ---
+    # CMS
     cms_score = 0
     if cms:
         all_issues.extend(cms.issues)
         if cms.cms == "WordPress":
-            wp_outdated = any("desactualizado" in i.message for i in cms.issues)
-            plugins_vuln = any("plugins sin actualizar" in i.message for i in cms.issues)
-            if wp_outdated:
+            if any("desactualizado" in i.message for i in cms.issues):
                 cms_score += 20
-            if plugins_vuln:
+            if any("plugins sin actualizar" in i.message for i in cms.issues):
                 cms_score += 30
     breakdown["CMS"] = cms_score
     score += cms_score
 
-    # --- Security ---
+    # Security
     sec_score = 0
     if security:
         all_issues.extend(security.issues)
@@ -43,15 +47,14 @@ def calculate(
             sec_score += 10
         if security.exposed_files:
             sec_score += 20
-        if security.cves:
-            sec_score += len(security.cves) * 5
-        missing = [h for h, v in security.headers.items() if v is None]
-        if len(missing) >= 3:
+        sec_score += min(len(security.cves) * 5, 20)
+        missing = sum(1 for v in security.headers.values() if v is None)
+        if missing >= 3:
             sec_score += 10
     breakdown["Seguridad"] = sec_score
     score += sec_score
 
-    # --- Performance ---
+    # Performance
     perf_score = 0
     if performance:
         all_issues.extend(performance.issues)
@@ -66,7 +69,7 @@ def calculate(
     breakdown["Performance"] = perf_score
     score += perf_score
 
-    # --- Hosting ---
+    # Hosting
     host_score = 0
     if hosting:
         all_issues.extend(hosting.issues)
@@ -76,7 +79,7 @@ def calculate(
     breakdown["Hosting"] = host_score
     score += host_score
 
-    # --- SEO ---
+    # SEO
     seo_score = 0
     if seo:
         all_issues.extend(seo.issues)
@@ -97,7 +100,7 @@ def calculate(
     breakdown["SEO"] = seo_score
     score += seo_score
 
-    # --- Compliance ---
+    # Compliance
     comp_score = 0
     if compliance:
         all_issues.extend(compliance.issues)
@@ -112,12 +115,16 @@ def calculate(
 
     score = min(score, 100)
 
-    # Sort issues by severity
+    # Sort issues: critical first, then warning, then info
     priority = {Severity.critical: 0, Severity.warning: 1, Severity.info: 2}
     top_issues = sorted(all_issues, key=lambda i: priority[i.severity])[:8]
 
+    # Label reflects lead quality for the sales team.
+    # Score ≥ 70 → many problems → hot lead (site needs a lot of work)
+    # Score 40-69 → moderate issues → medium opportunity
+    # Score < 40 → few problems → site is relatively healthy
     if score >= 70:
-        label = "LEAD CALIENTE"
+        label = "LEAD CALIENTE 🔥"
     elif score >= 40:
         label = "OPORTUNIDAD MEDIA"
     else:

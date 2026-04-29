@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import anthropic
-from backend.config import ANTHROPIC_API_KEY
+from backend.config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL
 from backend.models import AnalysisResult
 
 
@@ -17,14 +19,13 @@ def generate_email(result: AnalysisResult, product: str = "mantenimiento-web") -
         )
 
     contact_name = (result.contacts.contact_name if result.contacts else None) or result.name or ""
-    email_dest = (result.contacts.emails[0] if result.contacts and result.contacts.emails else None) or result.email or ""
 
     prompt = f"""Eres el equipo de ventas de Eclypse, una agencia de desarrollo web especializada en WordPress, performance y seguridad.
 
 Analizaste el sitio web {result.domain} y encontraste los siguientes problemas:
 {issues_text if issues_text else "Sin problemas críticos detectados."}
 
-Score comercial: {result.score.total if result.score else "N/A"}/100 ({result.score.label if result.score else ""})
+Score comercial: {result.score.total if result.score else "N/A"}/100
 CMS: {result.cms.cms if result.cms else "Desconocido"} {result.cms.version or "" if result.cms else ""}
 {"Nombre del contacto: " + contact_name if contact_name else ""}
 
@@ -48,9 +49,9 @@ contacto@eclypsedesign.com
 eclypsedesign.com"""
 
     message = client.messages.create(
-        model="claude-sonnet-4-6",
+        model=ANTHROPIC_MODEL,
         max_tokens=400,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
 
     return message.content[0].text if message.content else ""

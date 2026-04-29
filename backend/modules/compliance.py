@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import re
-import requests
+
 from bs4 import BeautifulSoup
-from backend.config import HEADERS, REQUEST_TIMEOUT
+
+from backend.safe_fetch import safe_get, safe_head
 from backend.models import ComplianceResult, Issue, Severity
 
 COOKIE_SIGNATURES = [
@@ -10,33 +13,31 @@ COOKIE_SIGNATURES = [
     "cookiehub", "axeptio", "complianz",
 ]
 
-PRIVACY_PATHS = ["/privacidad", "/privacy", "/privacy-policy", "/politica-de-privacidad", "/terminos", "/legal"]
+PRIVACY_PATHS = [
+    "/privacidad", "/privacy", "/privacy-policy",
+    "/politica-de-privacidad", "/terminos", "/legal",
+]
+
+PRIVACY_KEYWORDS = ["privacidad", "privacy", "política", "aviso legal", "cookies"]
 
 
 def _fetch(url: str) -> str:
     try:
-        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT, allow_redirects=True)
-        return r.text
+        return safe_get(url, allow_redirects=True).text
     except Exception:
         return ""
 
 
-def _has_cookie_banner(html: str) -> bool:
-    html_lower = html.lower()
-    return any(sig in html_lower for sig in COOKIE_SIGNATURES)
-
-
 def _has_privacy_policy(base_url: str, html: str) -> bool:
-    privacy_keywords = ["privacidad", "privacy", "política", "aviso legal", "cookies"]
     soup = BeautifulSoup(html, "lxml")
     for a in soup.find_all("a", href=True):
         text = a.get_text().lower()
         href = a["href"].lower()
-        if any(kw in text or kw in href for kw in privacy_keywords):
+        if any(kw in text or kw in href for kw in PRIVACY_KEYWORDS):
             return True
     for path in PRIVACY_PATHS:
         try:
-            r = requests.head(base_url.rstrip("/") + path, headers=HEADERS, timeout=5, allow_redirects=True)
+            r = safe_head(base_url.rstrip("/") + path, allow_redirects=True, timeout=5)
             if r.status_code == 200:
                 return True
         except Exception:
@@ -46,11 +47,11 @@ def _has_privacy_policy(base_url: str, html: str) -> bool:
 
 def _detect_analytics(html: str) -> dict:
     return {
-        "ga4": bool(re.search(r"gtag\('config',\s*'G-", html) or "googletagmanager.com/gtag" in html),
-        "gtm": bool("googletagmanager.com/gtm.js" in html or re.search(r"GTM-[A-Z0-9]+", html)),
+        "ga4":        bool(re.search(r"gtag\('config',\s*'G-", html) or "googletagmanager.com/gtag" in html),
+        "gtm":        bool("googletagmanager.com/gtm.js" in html or re.search(r"GTM-[A-Z0-9]+", html)),
         "meta_pixel": bool(re.search(r"fbq\('init'", html) or "connect.facebook.net/en_US/fbevents" in html),
-        "hotjar": bool("static.hotjar.com" in html or re.search(r"hj\(.*?'hjid'", html)),
-        "clarity": bool("clarity.ms/tag" in html or re.search(r"clarity\('set'", html)),
+        "hotjar":     bool("static.hotjar.com" in html),
+        "clarity":    bool("clarity.ms/tag" in html),
     }
 
 
@@ -61,8 +62,9 @@ def analyze(url: str) -> ComplianceResult:
 
     issues: list[Issue] = []
     html = _fetch(url)
+    html_lower = html.lower()
 
-    has_cookie = _has_cookie_banner(html)
+    has_cookie = any(sig in html_lower for sig in COOKIE_SIGNATURES)
     has_privacy = _has_privacy_policy(base, html)
     analytics = _detect_analytics(html)
     has_any_analytics = any(analytics.values())
@@ -72,7 +74,7 @@ def analyze(url: str) -> ComplianceResult:
     if not has_privacy:
         issues.append(Issue(severity=Severity.warning, message="Sin política de privacidad visible", detail="Obligatorio en la mayoría de países de LATAM y Europa"))
     if not has_any_analytics:
-        issues.append(Issue(severity=Severity.info, message="Sin sistema de analytics instalado", detail="Sin datos de visitas, no es posible medir el rendimiento del sitio"))
+        issues.append(Issue(severity=Severity.info, message="Sin sistema de analytics instalado", detail="Sin datos de visitas no es posible medir el rendimiento del sitio"))
 
     return ComplianceResult(
         has_cookie_banner=has_cookie,
@@ -82,5 +84,5 @@ def analyze(url: str) -> ComplianceResult:
         has_meta_pixel=analytics["meta_pixel"],
         has_hotjar=analytics["hotjar"],
         has_clarity=analytics["clarity"],
-        issues=issues
+        issues=issues,
     )

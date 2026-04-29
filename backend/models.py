@@ -1,5 +1,8 @@
-from pydantic import BaseModel, HttpUrl, field_validator
+from __future__ import annotations
+
+from pydantic import BaseModel, field_validator
 from typing import Optional
+from urllib.parse import urlparse, urlunparse
 from enum import Enum
 
 
@@ -23,10 +26,20 @@ class AnalysisRequest(BaseModel):
     @field_validator("url")
     @classmethod
     def normalize_url(cls, v: str) -> str:
-        v = v.strip().lower()
+        v = v.strip()
         if not v.startswith(("http://", "https://")):
             v = "https://" + v
-        return v
+
+        parsed = urlparse(v)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError("Solo se aceptan URLs http o https")
+
+        # Lowercase only scheme and host — paths are case-sensitive
+        normalized = parsed._replace(
+            scheme=parsed.scheme.lower(),
+            netloc=parsed.netloc.lower(),
+        )
+        return urlunparse(normalized)
 
 
 class ProgressEvent(BaseModel):
